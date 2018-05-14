@@ -7,7 +7,9 @@ setup(
     description="Mara cli app which calls the appropriate contributed subcommand.",
 
     install_requires=[
-        'mara-config>=0.1'],
+        'mara-config>=0.1',
+        'click'
+        ],
 
     dependency_links=[
         'git+https://github.com/mara/mara-config.git@master#egg=mara-config',
