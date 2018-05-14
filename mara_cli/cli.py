@@ -19,7 +19,6 @@ def _add_syslog_handler():
         logging.root.addHandler(handler)
 
 
-
 @click.group(help="""\
 Runs contributed commandline commands
 
@@ -28,11 +27,17 @@ Contributed functionality (flask, downloader,...) is available as subcommands.
 To run the webapp, use 'flask run'.
 
 """)
-@click.option('--debug/--no-debug', default=False)
-def cli(debug: bool):
+@click.option('--debug', default=False, is_flag=True, help="Show debug output")
+@click.option('--log-to-syslog', default=False, is_flag=True, help="Log to syslog")
+def cli(debug: bool, log_to_syslog):
     # --debug is consumed by the setup_commandline_commands but it's here to let it show up in help
     # and not cause parse errors
-    pass
+    if log_to_syslog:
+        # we want any log show up in the system log /systemd journal to see it there too...
+        # Having it here menas we cannot log the startup to the syslog, but if something
+        # goes wrong we anyway have to debug it manually
+        _add_syslog_handler()
+
 
 def setup_commandline_commands():
     """Needs to be run before click itself is run so the config which contributes click commands is available"""
@@ -42,9 +47,6 @@ def setup_commandline_commands():
                         datefmt='%Y-%m-%dT%H:%M:%S',
                         # makefiles expect all log in stdout
                         stream=sys.stdout)
-
-    # we want any log show up in the system log to see it there too...
-    _add_syslog_handler()
 
     if commandline_debug:
         logging.root.setLevel(logging.DEBUG)
@@ -64,7 +66,7 @@ def setup_commandline_commands():
     # overwrite any config system with commandline debug switch
     if commandline_debug and not configured_debug():
         from mara_config.config_system import set_config
-        set_config('debug', function = lambda: True)
+        set_config('debug', function=lambda: True)
 
     # And now we can start up the app
     from mara_config import call_app_composing_function
@@ -85,6 +87,7 @@ def main():
     args = sys.argv[1:]
     cli.main(args=args, prog_name='mara')
 
+
 # This is here (instead of in mara-config) to have somethign to test the click functionality and
 # to not add another import without setup requirements
 @cli.command()
@@ -92,6 +95,7 @@ def print_config():
     """Prints the current config"""
     from mara_config.config_system.config_display import print_config
     print_config()
+
 
 if __name__ == '__main__':
     main()
