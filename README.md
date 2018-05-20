@@ -6,8 +6,6 @@ commands are exposed as subcommands. It automatically finds the
 appropriate subcommand.
 
 
-On Linux, any `mara` command will automatically log to `syslog`.
-
 ## Contributed MARA_* functionality in this package
 
 * A click command which iterates the known set config items 
