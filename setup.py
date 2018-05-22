@@ -22,7 +22,7 @@ setup(
     ],
 
     extras_require={
-        'test': ['pytest'],
+        'test': ['pytest', 'pytest_click'],
     },
 
     packages=find_packages(),
