@@ -53,11 +53,13 @@ def setup_commandline_commands():
         log.debug("Enabled debug output via commandline")
 
     # Initialize the config system
-    from mara_config.config_system import add_config_from_environment, add_config_from_local_setup_py
-    add_config_from_local_setup_py()
-    add_config_from_environment()
+    from mara_config import init_mara_config_once
+    init_mara_config_once()
 
-    # we try the second mechanism as well
+    # The order basically means that the we only get information about the config system startup
+    # when --debug is given on the commandline, but not when mara_config.config.debug() is configured
+    # in the config system itself.
+    # I think we can live with that...
     from mara_config.config import debug as configured_debug
     if configured_debug():
         logging.root.setLevel(logging.DEBUG)
@@ -68,9 +70,6 @@ def setup_commandline_commands():
         from mara_config.config_system import set_config
         set_config('debug', function=lambda: True)
 
-    # And now we can start up the app
-    from mara_config import call_app_composing_function
-    call_app_composing_function()
 
     from mara_config import get_contributed_functionality
     for module, command in get_contributed_functionality('MARA_CLICK_COMMANDS'):
