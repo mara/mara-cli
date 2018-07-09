@@ -6,14 +6,14 @@ def get_long_description():
 
 setup(
     name='mara-cli',
-    version='0.1',
+    version='0.1.1',
 
     description="Mara cli app which calls the appropriate contributed subcommand.",
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
 
     install_requires=[
-        'mara-config>=0.1',
+        'mara-config>=0.1.4',
         'click'
         ],
 
