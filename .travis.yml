@@ -20,6 +20,6 @@ deploy:
   on:
     tags: true
     branch: master
-    repo: mara/mara-config
+    repo: mara/mara-cli
     condition: $UPLOAD == True
 
