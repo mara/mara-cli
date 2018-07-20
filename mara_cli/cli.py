@@ -22,9 +22,9 @@ def _add_syslog_handler():
 @click.group(help="""\
 Runs contributed commandline commands
 
-Contributed functionality (flask, downloader,...) is available as subcommands.
+Contributed functionality (ETL runners, downloader,...) are available as subcommands.
 
-To run the webapp, use 'flask run'.
+To run the flask webapp, use 'flask run'.
 
 """)
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
@@ -34,7 +34,7 @@ def cli(debug: bool, log_to_syslog):
     # and not cause parse errors
     if log_to_syslog:
         # we want any log show up in the system log /systemd journal to see it there too...
-        # Having it here menas we cannot log the startup to the syslog, but if something
+        # Having it here means we cannot log the startup to the syslog, but if something
         # goes wrong we anyway have to debug it manually
         _add_syslog_handler()
 
@@ -72,12 +72,23 @@ def setup_commandline_commands():
 
 
     from mara_config import get_contributed_functionality
+    known_names = []
     for module, command in get_contributed_functionality('MARA_CLICK_COMMANDS'):
         if command and 'callback' in command.__dict__ and command.__dict__['callback']:
             package = command.__dict__['callback'].__module__.rpartition('.')[0]
-            if package != 'flask':
-                command.name = package + '.' + command.name
-                cli.add_command(command)
+            # Give a package a chance to put all their commands as subcommands of the main package name.
+            # For that to work we have to make sure we do not add multiple commands with the same name
+            if isinstance(command, click.Group):
+                name = command.name
+            else:
+                name = package + '.' + command.name
+            if name in known_names:
+                callback = command.__dict__['callback']
+                func_name = f"{callback.__module__}{callback.__name__}"
+                raise RuntimeError(f"Attempting to add conflicting click.Commands for name '{name}': {func_name}")
+            known_names.append(name)
+            command.name = name
+            cli.add_command(command)
 
 
 def main():
@@ -85,15 +96,6 @@ def main():
     setup_commandline_commands()
     args = sys.argv[1:]
     cli.main(args=args, prog_name='mara')
-
-
-# This is here (instead of in mara-config) to have somethign to test the click functionality and
-# to not add another import without setup requirements
-@cli.command()
-def print_config():
-    """Prints the current config"""
-    from mara_config.config_system.config_display import print_config
-    print_config()
 
 
 if __name__ == '__main__':

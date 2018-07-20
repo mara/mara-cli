@@ -13,7 +13,7 @@ setup(
     long_description_content_type='text/markdown',
 
     install_requires=[
-        'mara-config>=0.1.4',
+        'mara-config>=0.2.0',
         'click'
         ],
 
