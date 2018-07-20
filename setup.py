@@ -6,7 +6,7 @@ def get_long_description():
 
 setup(
     name='mara-cli',
-    version='0.1.1',
+    version='0.2.0',
 
     description="Mara cli app which calls the appropriate contributed subcommand.",
     long_description=get_long_description(),

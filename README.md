@@ -8,8 +8,7 @@ appropriate subcommand.
 
 ## Contributed MARA_* functionality in this package
 
-* A click command which iterates the known set config items 
-  (directly added, not via `MARA_CLICK_COMMANDS`).
+none
 
 ## Consumed MARA_* functionality
 
