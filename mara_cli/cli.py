@@ -9,16 +9,6 @@ import click
 log = logging.getLogger(__name__)
 
 
-def _add_syslog_handler():
-    """Adds a handler that the log produced by the CLI commands also go to syslog/systemd journal"""
-    if os.name == 'posix':
-        import logging.handlers
-        # /dev/log is linux only (would need a different path on Mac, but these are dev machines...)
-        handler = logging.handlers.SysLogHandler(address='/dev/log')
-        # root logger to send every log message
-        logging.root.addHandler(handler)
-
-
 @click.group(help="""\
 Runs contributed commandline commands
 
@@ -28,16 +18,10 @@ To run the flask webapp, use 'flask run'.
 
 """)
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
-@click.option('--log-to-syslog', default=False, is_flag=True, help="Log to syslog")
-def cli(debug: bool, log_to_syslog):
+def cli(debug: bool):
     # --debug is consumed by the setup_commandline_commands but it's here to let it show up in help
     # and not cause parse errors
-    if log_to_syslog:
-        # we want any log show up in the system log /systemd journal to see it there too...
-        # Having it here means we cannot log the startup to the syslog, but if something
-        # goes wrong we anyway have to debug it manually
-        _add_syslog_handler()
-
+    pass
 
 def setup_commandline_commands():
     """Needs to be run before click itself is run so the config which contributes click commands is available"""
