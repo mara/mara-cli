@@ -1,7 +1,6 @@
 """Mara command line interface"""
 
 import logging
-import os
 import sys
 
 import click
@@ -22,6 +21,7 @@ def cli(debug: bool):
     # --debug is consumed by the setup_commandline_commands but it's here to let it show up in help
     # and not cause parse errors
     pass
+
 
 def setup_commandline_commands():
     """Needs to be run before click itself is run so the config which contributes click commands is available"""
@@ -53,7 +53,6 @@ def setup_commandline_commands():
     if commandline_debug and not configured_debug():
         from mara_config.config_system import set_config
         set_config('debug', function=lambda: True)
-
 
     from mara_config import get_contributed_functionality
     known_names = []
