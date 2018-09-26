@@ -17,7 +17,8 @@ To run the flask webapp, use 'flask run'.
 
 """)
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
-def cli(debug: bool):
+@click.option('--log-stderr', default=False, is_flag=True, help="Send log output to stderr")
+def cli(debug: bool, log_stderr: bool):
     # --debug is consumed by the setup_commandline_commands but it's here to let it show up in help
     # and not cause parse errors
     pass
@@ -26,11 +27,12 @@ def cli(debug: bool):
 def setup_commandline_commands():
     """Needs to be run before click itself is run so the config which contributes click commands is available"""
     commandline_debug = '--debug' in sys.argv
+    # makefiles expect all log in stdout. Send to stderr only if asked to
+    log_stream = sys.stderr if '--log-stderr' in sys.argv else sys.stdout
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s %(levelname)s, %(name)s: %(message)s',
                         datefmt='%Y-%m-%dT%H:%M:%S',
-                        # makefiles expect all log in stdout
-                        stream=sys.stdout)
+                        stream=log_stream)
 
     if commandline_debug:
         logging.root.setLevel(logging.DEBUG)
