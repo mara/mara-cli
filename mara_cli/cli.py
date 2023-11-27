@@ -63,8 +63,10 @@ def setup_commandline_commands():
             package = command.__dict__['callback'].__module__.rpartition('.')[0]
             # Give a package a chance to put all their commands as subcommands of the main package name.
             # For that to work we have to make sure we do not add multiple commands with the same name
-            if isinstance(command, click.Group):
+            if isinstance(command, click.MultiCommand):
                 name = command.name
+                if name.startswith('mara-'):
+                    name = name[5:]
             else:
                 name = package + '.' + command.name
             if name in known_names:
