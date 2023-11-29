@@ -25,7 +25,6 @@ def cli(debug: bool, log_stderr: bool):
 
 def setup_commandline_commands():
     """Needs to be run before click itself is run so the config which contributes click commands is available"""
-    from ._mara_modules import import_mara_modules, get_contributed_functionality
     commandline_debug = '--debug' in sys.argv
     # makefiles expect all log in stdout. Send to stderr only if asked to
     log_stream = sys.stderr if '--log-stderr' in sys.argv else sys.stdout
@@ -38,30 +37,20 @@ def setup_commandline_commands():
         logging.root.setLevel(logging.DEBUG)
         log.debug("Enabled debug output via commandline")
 
-    # Import all installed mara packages
-    import_mara_modules(log)
+    if sys.version_info < (3, 10):
+        from importlib_metadata import entry_points
+    else:
+        from importlib.metadata import entry_points
 
-    known_names = []
-    for module, command in get_contributed_functionality('MARA_CLICK_COMMANDS', click.Command):
-        if command and 'callback' in command.__dict__ and command.__dict__['callback']:
-            package = command.__dict__['callback'].__module__.rpartition('.')[0]
-            # Give a package a chance to put all their commands as subcommands of the main package name.
-            # For that to work we have to make sure we do not add multiple commands with the same name
-            if isinstance(command, click.MultiCommand):
-                if command.name.startswith('mara-'):
-                    name = command.name[5:]
-                else:
-                    name = command.name
-            else:
-                name = package + '.' + command.name
-            if name in known_names:
-                callback = command.__dict__['callback']
-                func_name = f"{callback.__module__}{callback.__name__}"
-                raise RuntimeError(f"Attempting to add conflicting click.Commands for name '{name}': {func_name}")
-            known_names.append(name)
-            command.name = name
+    discovered_plugins = entry_points(group='mara.commands')
+    for entry_point in discovered_plugins:
+        command = entry_point.load()
+        command.name = entry_point.name
+        if not isinstance(command, click.Command):
+            log.warn(f"Entry point '{entry_point}' is ignored because it does not return a click command.")
+        else:
             cli.add_command(command)
-    
+
     if not cli.commands:
         # Could not find any command in the installed modules
         print(RED + "No mara package is installed which provide commands" + RESET, file=sys.stderr)
