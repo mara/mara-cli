@@ -11,14 +11,10 @@ RED = '\033[31m'
 RESET = '\033[0m'
 
 
-@click.group(help=("""
+@click.group(help="""
 The Mara ETL Framework is a Python framework to build data pipelines.
-             
-Contributed functionality (ETL runners, downloader,...) are available as subcommands."""
-    + ("""
-             
-To run the flask webapp, use 'flask run'.
-""") if 'mara_app' in sys.modules else ''))
+
+Contributed functionality (ETL runners, downloader,...) are available as subcommands.""")
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
 @click.option('--log-stderr', default=False, is_flag=True, help="Send log output to stderr")
 def cli(debug: bool, log_stderr: bool):
