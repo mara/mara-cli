@@ -12,7 +12,7 @@ RESET = '\033[0m'
 
 
 @click.group(help="""
-The Mara ETL Framework is a Python framework to build data pipelines.
+The Mara ELT Framework is a Python framework to build data pipelines.
 
 Contributed functionality (ETL runners, downloader,...) are available as subcommands.""")
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
