@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 (2023-12-06)
+
+- fix incorrect build version
+- update readme
+
 ## 0.3.0 (2023-12-06)
 
 - Auto discover commands from entry_point `mara.commands`
