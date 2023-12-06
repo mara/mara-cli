@@ -7,15 +7,14 @@ import click
 
 log = logging.getLogger(__name__)
 
+RED = '\033[31m'
+RESET = '\033[0m'
 
-@click.group(help="""\
-Runs contributed commandline commands
 
-Contributed functionality (ETL runners, downloader,...) are available as subcommands.
+@click.group(help="""
+The Mara ELT Framework is a Python framework to build data pipelines.
 
-To run the flask webapp, use 'flask run'.
-
-""")
+Contributed functionality (ETL runners, downloader,...) are available as subcommands.""")
 @click.option('--debug', default=False, is_flag=True, help="Show debug output")
 @click.option('--log-stderr', default=False, is_flag=True, help="Send log output to stderr")
 def cli(debug: bool, log_stderr: bool):
@@ -38,42 +37,29 @@ def setup_commandline_commands():
         logging.root.setLevel(logging.DEBUG)
         log.debug("Enabled debug output via commandline")
 
-    # Initialize the config system
-    from mara_config import init_mara_config_once
-    init_mara_config_once()
+    if sys.version_info < (3, 10):
+        from importlib_metadata import entry_points
+    else:
+        from importlib.metadata import entry_points
 
-    # The order basically means that the we only get information about the config system startup
-    # when --debug is given on the commandline, but not when mara_config.config.debug() is configured
-    # in the config system itself.
-    # I think we can live with that...
-    from mara_config.config import debug as configured_debug
-    if configured_debug():
-        logging.root.setLevel(logging.DEBUG)
-        log.debug("Enabled debug output via config")
-
-    # overwrite any config system with commandline debug switch
-    if commandline_debug and not configured_debug():
-        from mara_config.config_system import set_config
-        set_config('debug', function=lambda: True)
-
-    from mara_config import get_contributed_functionality
-    known_names = []
-    for module, command in get_contributed_functionality('MARA_CLICK_COMMANDS'):
-        if command and 'callback' in command.__dict__ and command.__dict__['callback']:
-            package = command.__dict__['callback'].__module__.rpartition('.')[0]
-            # Give a package a chance to put all their commands as subcommands of the main package name.
-            # For that to work we have to make sure we do not add multiple commands with the same name
-            if isinstance(command, click.Group):
-                name = command.name
-            else:
-                name = package + '.' + command.name
-            if name in known_names:
-                callback = command.__dict__['callback']
-                func_name = f"{callback.__module__}{callback.__name__}"
-                raise RuntimeError(f"Attempting to add conflicting click.Commands for name '{name}': {func_name}")
-            known_names.append(name)
-            command.name = name
+    discovered_plugins = entry_points(group='mara.commands')
+    for entry_point in discovered_plugins:
+        command = entry_point.load()
+        command.name = entry_point.name
+        if not isinstance(command, click.Command):
+            log.warn(f"Entry point '{entry_point}' is ignored because it does not return a click command.")
+        else:
             cli.add_command(command)
+
+    if not cli.commands:
+        # Could not find any command in the installed modules
+        print(RED + "No mara package is installed which provide commands" + RESET, file=sys.stderr)
+        print("""
+Please install the packages you want to use, e.g. by calling
+              
+    pip install mara-pipelines
+""", file=sys.stderr)
+        sys.exit(1)
 
 
 def main():
