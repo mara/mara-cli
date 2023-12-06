@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.2 (2018-07-20)
+## 0.3.0 (2023-12-06)
+
+- Auto discover commands from entry_point `mara.commands`
+- Refactoring config logic:
+  - automatically import `mara_config.py` if exists
+  - optionally specify where the mara_config is with env. `MARA_CONFIG`
+  - drop usage of module `mara-config`
+
+## 0.2.0 (2018-07-20)
 - Remove `mara print_config` command (moved to mara-config package).
 - Allow for click.Group packages to keep their original name. 
   This allows for packages to set a shorter name and provide the 
