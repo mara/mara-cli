@@ -37,6 +37,10 @@ def setup_commandline_commands():
         logging.root.setLevel(logging.DEBUG)
         log.debug("Enabled debug output via commandline")
 
+    # tries to import a mara config file if it can be found
+    from ._config import try_import_mara_config
+    try_import_mara_config()
+
     if sys.version_info < (3, 10):
         from importlib_metadata import entry_points
     else:
